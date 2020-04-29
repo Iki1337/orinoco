@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>Orinoco</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+
+        <a href="#" onclick="accueil()">Accueil</a>
+        <a href="#" onclick="monPanier()">Mon panier</a>
+
+        <div id="app"></div>
+        
+    </body>
+
+    <script>
+
+        var panier = [];
+
+        async function creationArticle(api, idDivEtApi, titres) {
+
+            var section = document.createElement('section');
+            var titreCategorie = document.createElement('h2');
+
+            section.className += idDivEtApi;
+            titreCategorie.className += "titreCategorie";
+
+            titreCategorie.textContent = titres;
+
+            section.appendChild(titreCategorie);
+
+            for (var i =0; i<api.length; i++){
+
+                var article = document.createElement('article');
+                var titreProduit = document.createElement('h3');
+                var imgProduit = document.createElement('img');
+                var prix = document.createElement('p');
+                var bouton = document.createElement('button');
+
+                article.className += "caseArticle";
+                titreProduit.className += "titreProduit";
+                imgProduit.className += "imgProduitAccueil";
+                prix.className += "prixProduit";
+                bouton.className += "boutonEnSavoirPlus";
+
+                titreProduit.textContent = api[i].name;
+                prix.textContent = api[i].price;
+                bouton.textContent = "En savoir plus";
+
+                imgProduit.setAttribute("src", api[i].imageUrl);
+                bouton.setAttribute("onclick","details('"+api[i]._id+"', '"+idDivEtApi+"')");
+
+                article.appendChild(titreProduit);
+                article.appendChild(imgProduit);
+                article.appendChild(prix);
+                article.appendChild(bouton);
+
+                section.appendChild(article);
+            }
+
+            return section;
+        }
+
+        async function creationDetails(api, _id, idDivEtApi){
+
+            var section = document.createElement('section');
+            var titreProduit = document.createElement('h2');
+            var imgProduit = document.createElement('img');
+            var descr = document.createElement('p');
+            var prix = document.createElement('p');
+            var select = document.createElement('select');
+            var bouton = document.createElement('button');
+
+            section.className += "sectionDetail";
+            titreProduit.className += "titreProduitDetail";
+            imgProduit.className += "imgProduitDetail";
+            descr.className += "descrDetail";
+            prix.className += "prixDetail";
+            select.className += "selectDetail";
+            bouton.className += "panier";
+
+            titreProduit.textContent = api.name;
+            descr.textContent = api.description;
+            prix.textContent = api.price;
+            bouton.textContent = "Ajouter au panier";
+
+            imgProduit.setAttribute("src", api.imageUrl);
+            bouton.setAttribute("onclick","ajouterAuPanier('"+api._id+"', '"+idDivEtApi+"')");
+
+            if (idDivEtApi == "teddies"){
+                for (var i =0; i<api.colors.length; i++){
+                    var option = document.createElement('option');
+                    option.setAttribute("value",api.colors[i]);
+                    option.textContent = api.colors[i];
+                    select.appendChild(option);
+                }
+            }else if (idDivEtApi == "cameras"){
+                for (var i =0; i<api.lenses.length; i++){
+                    var option = document.createElement('option');
+                    option.setAttribute("value",api.lenses[i]);
+                    option.textContent = api.lenses[i];
+                    select.appendChild(option);
+                }
+            }else if (idDivEtApi == "furniture"){
+                for (var i =0; i<api.varnish.length; i++){
+                    var option = document.createElement('option');
+                    option.setAttribute("value",api.varnish[i]);
+                    option.textContent = api.varnish[i];
+                    select.appendChild(option);
+                }
+            }
+
+            section.appendChild(titreProduit);
+            section.appendChild(imgProduit);
+            section.appendChild(descr);
+            section.appendChild(select);
+            section.appendChild(prix);
+            section.appendChild(bouton);
+
+            return section;
+        }
+
+        async function creationPanier(){
+
+            var section = document.createElement('section');
+            var titreSection = document.createElement('h2');
+
+            section.className += "sectionPanier";
+            titreSection.className += "titreSectionPanier";
+
+            titreSection.textContent = "Mon panier";
+
+            section.appendChild(titreSection);
+
+            for (var i =0; i<panier.length; i++){
+                var request = new XMLHttpRequest();
+                request.onreadystatechange = function() {
+                    if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                        var response = JSON.parse(this.responseText);
+
+                        var titreProduit = document.createElement('p');
+                        var prixProduit = document.createElement('p');
+
+                        titreProduit.className += "titreProduitPanier";
+                        prixProduit.className += "prixProduitPanier";
+
+                        titreProduit.textContent = response.name;
+                        prixProduit.textContent = response.price;
+
+                        section.appendChild(titreProduit);
+                        section.appendChild(prixProduit);
+                    }
+                };
+                request.open("GET", panier[i]);
+                request.send();
+            }
+
+            return section;
+        }
+
+        async function get(urlApi, idDivEtApi, titres){
+
+            var request = new XMLHttpRequest();
+            
+            request.onreadystatechange = function() {
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+
+                    creationArticle(response, idDivEtApi, titres)
+                        .then(function(data){
+                            document.getElementById("app").appendChild(data);
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        });
+                }
+            };
+            request.open("GET", urlApi);
+            request.send();
+        }
+        
+        get("http://localhost:3000/api/teddies", "teddies", "Oursons en peluche");
+        get("http://localhost:3000/api/cameras", "cameras", "Cameras");
+        get("http://localhost:3000/api/furniture", "furniture", "Fournitures");
+
+        function accueil(){
+            document.getElementById("app").innerHTML = "";
+            get("http://localhost:3000/api/teddies", "teddies", "Oursons en peluche");
+            get("http://localhost:3000/api/cameras", "cameras", "Cameras");
+            get("http://localhost:3000/api/furniture", "furniture", "Fournitures");
+        }
+
+        function details(_id, idDivEtApi){
+            document.getElementById("app").innerHTML = "";
+            var api = "http://localhost:3000/api/"+idDivEtApi+"/"+_id;
+            var request = new XMLHttpRequest();
+
+            request.onreadystatechange = function() {
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+                    creationDetails(response, _id, idDivEtApi)
+                        .then(function(data){
+                            document.getElementById("app").appendChild(data);
+                        })
+
+                        .catch(function(err){
+                            console.log(err);
+                        });
+                }
+            };
+            request.open("GET", api);
+            request.send();
+        }
+
+        function ajouterAuPanier(_id, idDivEtApi){
+            panier.push("http://localhost:3000/api/"+idDivEtApi+"/"+_id);
+        }
+
+        function monPanier(){
+            document.getElementById("app").innerHTML = "";
+            creationPanier()
+            .then(function(data){
+                document.getElementById("app").appendChild(data);
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+        }
+
+    </script>
+
+</html>
