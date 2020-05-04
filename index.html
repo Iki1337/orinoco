@@ -18,8 +18,11 @@
     <script>
 
         var panier = [];
+        var panierLocalStorage;
 
-        async function creationArticle(api, idDivEtApi, titres) {
+        var total = 0;
+
+        async function creationArticle(api, idDivEtApi, titres) { // Cette fonction va nous permettre de créer les articles séléctionnables sur la page d'accueil sous forme de liste.
 
             var section = document.createElement('section');
             var titreCategorie = document.createElement('h2');
@@ -31,7 +34,7 @@
 
             section.appendChild(titreCategorie);
 
-            for (var i =0; i<api.length; i++){
+            for (var i =0; i<api.length; i++){ // On parcourt l'api renseignée en paramètre
 
                 var article = document.createElement('article');
                 var titreProduit = document.createElement('h3');
@@ -63,7 +66,7 @@
             return section;
         }
 
-        async function creationDetails(api, _id, idDivEtApi){
+        async function creationDetails(api, _id, idDivEtApi){ // Cette fonction va nous permettre de créer une vue affichant les détails de l'article sur lequel on vient de cliquer.
 
             var section = document.createElement('section');
             var titreProduit = document.createElement('h2');
@@ -89,21 +92,23 @@
             imgProduit.setAttribute("src", api.imageUrl);
             bouton.setAttribute("onclick","ajouterAuPanier('"+api._id+"', '"+idDivEtApi+"')");
 
-            if (idDivEtApi == "teddies"){
+            // Création de la liste déroulante, en fonction de l'api à laquelle appartient l'article :
+
+            if (idDivEtApi == "teddies"){ // Si l'api correspond à "http://localhost:3000/api/teddies" :
                 for (var i =0; i<api.colors.length; i++){
                     var option = document.createElement('option');
                     option.setAttribute("value",api.colors[i]);
                     option.textContent = api.colors[i];
                     select.appendChild(option);
                 }
-            }else if (idDivEtApi == "cameras"){
+            }else if (idDivEtApi == "cameras"){ // Si l'api correspond à "http://localhost:3000/api/cameras" :
                 for (var i =0; i<api.lenses.length; i++){
                     var option = document.createElement('option');
                     option.setAttribute("value",api.lenses[i]);
                     option.textContent = api.lenses[i];
                     select.appendChild(option);
                 }
-            }else if (idDivEtApi == "furniture"){
+            }else if (idDivEtApi == "furniture"){ // Si l'api correspond à "http://localhost:3000/api/furniture" :
                 for (var i =0; i<api.varnish.length; i++){
                     var option = document.createElement('option');
                     option.setAttribute("value",api.varnish[i]);
@@ -122,19 +127,27 @@
             return section;
         }
 
-        async function creationPanier(){
+        async function creationPanier(){ // Cette fonction va créer une vue affichant le panier.
 
             var section = document.createElement('section');
             var titreSection = document.createElement('h2');
+            var prixTotal = document.createElement('p');
+
+            total = 0; // Cette variable contiendra le prix total du panier.
 
             section.className += "sectionPanier";
             titreSection.className += "titreSectionPanier";
+            prixTotal.className += "prixTotal";
 
             titreSection.textContent = "Mon panier";
 
             section.appendChild(titreSection);
 
-            for (var i =0; i<panier.length; i++){
+            if(value == null){ // Si on ne synchronise pas la variable value en lui attribuant la valeur de panier dès maintenant, elle ne se synchronisera que lors de la prochaine session et cette fonction provoquera un avertissement dans la console.
+                value = panier;
+            }
+
+            for (var i =0; i<value.length; i++){
                 var request = new XMLHttpRequest();
                 request.onreadystatechange = function() {
                     if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
@@ -149,18 +162,21 @@
                         titreProduit.textContent = response.name;
                         prixProduit.textContent = response.price;
 
+                        total += response.price; // On incrémente la variable total en ajoutant le prix de l'article value[i].response.
+                        prixTotal.textContent = "Prix Total : " + total;
+
                         section.appendChild(titreProduit);
                         section.appendChild(prixProduit);
                     }
                 };
-                request.open("GET", panier[i]);
+                request.open("GET", value[i]);
                 request.send();
             }
-
+            section.appendChild(prixTotal);
             return section;
         }
 
-        async function get(urlApi, idDivEtApi, titres){
+        async function get(urlApi, idDivEtApi, titres){ // On va ici créer une requette GET pour l'API renseignée dans urlApi. Les autres variables seront passées à creationArticle().
 
             var request = new XMLHttpRequest();
             
@@ -180,10 +196,6 @@
             request.open("GET", urlApi);
             request.send();
         }
-        
-        get("http://localhost:3000/api/teddies", "teddies", "Oursons en peluche");
-        get("http://localhost:3000/api/cameras", "cameras", "Cameras");
-        get("http://localhost:3000/api/furniture", "furniture", "Fournitures");
 
         function accueil(){
             document.getElementById("app").innerHTML = "";
@@ -216,6 +228,8 @@
 
         function ajouterAuPanier(_id, idDivEtApi){
             panier.push("http://localhost:3000/api/"+idDivEtApi+"/"+_id);
+            panierLocalStorage = JSON.stringify(panier);
+            localStorage.setItem("panier", panierLocalStorage);
         }
 
         function monPanier(){
@@ -227,6 +241,12 @@
             .catch(function(err){
                 console.log(err);
             });
+        }
+
+        accueil()
+        var value = JSON.parse(localStorage.getItem("panier")); // On synchronise le contenu du panier de la session avec celui du panier en mémoire dans le localStorage dès le lancement de l'application. Cela évite que le contenu de la page panier ne s'efface dès qu'on ajoute un nouvel article lors de la prochaine session.
+        if(value != null){
+            panier = value;
         }
 
     </script>
