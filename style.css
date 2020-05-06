@@ -1,0 +1,170 @@
+@font-face {
+  font-family: 'belligerent';
+  src: url('fonts/belligerent-webfont.woff2') format('woff2'),
+       url('fonts/belligerent-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+#app{
+  margin-top : 65px;
+}
+
+h1, h2, h3{
+  font-family: 'belligerent';
+}
+
+h2{
+  font-size: 3rem;
+}
+
+.boutonEnSavoirPlus, .panier, .buttonAppelFormulaire, .buttonSupressionPanier, .validationBouton{
+  border: none;
+  color: white;
+  background-color: #8f5bfe;
+  padding: 5px 15px;
+  transition: 0.5s;
+  border-radius: 5px;
+}
+
+.boutonEnSavoirPlus:hover,.panier:hover, .buttonAppelFormulaire:hover, .buttonSupressionPanier:hover, .validationBouton:hover{
+  background-color: #E38910;
+}
+
+/* --- COMMUN A TOUTES LES PAGES ---------------------------------------------------------- */
+
+.bg-nav-perso{
+  background-color: #F3E9F1;
+  border-bottom: 1px solid #8f5bfe;
+}
+
+footer{
+  margin-top: 50px;
+  width: 100%;
+}
+
+footer {
+  margin-top: 100px;
+  width: 100%;
+  background-color: #F3E9F1;
+  text-align: center;
+  padding: 20px;
+}
+
+footer a{
+  text-decoration: none!important;
+  color: black;
+}
+
+/* --- MENTIONS LEGALES ---------------------------------------------------------- */
+
+.sectionMentionsLegales{
+  padding: 50px;
+}
+
+/* --- VUE D'ACCUEIL -------------------------------------------------------------------- */
+
+#carouselPresentation h5, #carouselPresentation p{
+  text-shadow: black 1px 0 5px;
+}
+
+.sectionArticle{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  text-align: center;
+  margin: 70px 0;
+}
+
+.sectionArticle h2{
+  width: 100%;
+}
+
+.sectionArticle .caseArticle{
+  width: 200px;
+  margin: 20px;
+  background-color:#F6F6F6;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.sectionArticle .caseArticle img{
+  width: 100%;
+}
+
+/* --- VUE DE DETAIL -------------------------------------------------------------------- */
+
+.sectionDetail{
+  width: 100%;
+  padding: 50px;
+}
+
+.imgProduitDetail{
+  width: 70%;
+  display: block;
+  margin: 20px auto;
+}
+
+.prixDetail{
+  margin-top: 20px;
+  font-size: 3rem;
+  font-family: 'belligerent';
+  color: red;
+}
+
+/* --- VUE PANIER -------------------------------------------------------------------- */
+
+.sectionPanier{
+  padding: 50px;
+}
+
+.prixTotal{
+  margin: 50px 0;
+  font-size: 1.5rem;
+  font-family: 'belligerent';
+  color: red;
+}
+
+.articlePanier{
+  display : flex;
+  margin : 10px;
+  justify-content: space-between;
+  background-color: #F3E9F1;
+  padding: 30px 20px 15px 20px;
+  border-radius: 15px;
+}
+
+.prixProduitPanier{
+  font-family: 'belligerent';
+  color: red;
+  font-size: 1.3rem;
+}
+
+.asideAppelFormulaire{
+  position: fixed;
+  background-color: rgb(255, 196, 0);
+  right: 0;
+  padding: 20px 20px 20px 80px;
+  border-radius: 100px 0 0 100px;
+  transform: translateX(200px);
+  transition: 0.5s;
+  text-align: center;
+}
+
+.asideAppelFormulaire:hover{
+  transform: translateX(0px);
+}
+
+@media screen and (max-width: 500px) {
+  .asideAppelFormulaire{
+    bottom: 80px;
+    transform: translateX(0px);
+    padding: 20px;
+  }
+}
+
+.buttonSupressionPanier{
+  display: block;
+  margin: 10px auto;
+}
