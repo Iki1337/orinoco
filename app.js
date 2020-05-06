@@ -291,14 +291,18 @@ function envoiForm(api, stringNomApi){
 
   // Création du tableau de strings intitulé product_id :
 
-  var product_id = api;
+  var products = api;
+
+  // Création de la variable qui englobera ces deux objets :
+
+  var send ={contact, products};
 
   // Envoi des requêtes POST :
 
   var request = new XMLHttpRequest();
   request.open("POST", "http://localhost:3000/api/" + stringNomApi + "/order");
   request.setRequestHeader("Content-Type", "application/json");
-  request.send(JSON.stringify(contact), JSON.stringify(product_id));
+  request.send(JSON.stringify(send));
 }
 
 async function get(urlApi, idDivEtApi, titres) {
