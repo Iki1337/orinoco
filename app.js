@@ -1,6 +1,9 @@
 var panier = [];
 var panierLocalStorage;
 
+var contact = {};
+var orderId = new Map();
+
 var total = 0;
 
 async function slider(){ //Il s'agit simplement d'un carousel bootstrap, sans modifications particulières.
@@ -141,10 +144,7 @@ async function creationPanier() { // Cette fonction va créer une vue affichant 
 
   section.appendChild(titreSection);
 
-  if (value == null) {
-    // Si on ne synchronise pas la variable value en lui attribuant la valeur de panier dès maintenant, elle ne se synchronisera que lors de la prochaine session et cette fonction provoquera un avertissement dans la console.
-    value = panier;
-  }
+  value = panier;
 
   // On vérifie que le panier contient quelque chose :
 
@@ -242,6 +242,10 @@ async function creationPanier() { // Cette fonction va créer une vue affichant 
 
 async function triArticle() {
 
+  // orderId est remise à 0 pour ne pas redonné les orderId des pécédenrtes commandes.
+
+  orderId = new Map();
+
   // Creation du (des) tableaux qui serviront à la création de product_id :
 
   var teddies = [];
@@ -264,13 +268,23 @@ async function triArticle() {
     }
   }
 
-  envoiForm(teddies, "teddies");
-  envoiForm(cameras, "cameras");
-  envoiForm(furniture, "furniture");
+  if(teddies.length>0){
+    envoiForm(teddies, "teddies");
+  }
 
+  if(cameras.length>0){
+    envoiForm(cameras, "cameras");
+  }
+
+  if(furniture.length>0){
+    envoiForm(furniture, "furniture");
+  }
+
+  /*console.log(orderId);*/
 }
 
-function envoiForm(api, stringNomApi){
+async function envoiForm(api, stringNomApi){
+
   // Création de l'objet contact :
 
   var nom = document.forms["validationCommande"]["nom"].value;
@@ -279,7 +293,7 @@ function envoiForm(api, stringNomApi){
   var ville = document.forms["validationCommande"]["ville"].value;
   var email = document.forms["validationCommande"]["email"].value;
 
-  var contact = [
+  contact = [
     {
       firstName: nom,
       lastName: prenom,
@@ -289,7 +303,7 @@ function envoiForm(api, stringNomApi){
     }
   ];
 
-  // Création du tableau de strings intitulé product_id :
+  // Création du tableau de strings intitulé products :
 
   var products = api;
 
@@ -303,6 +317,74 @@ function envoiForm(api, stringNomApi){
   request.open("POST", "http://localhost:3000/api/" + stringNomApi + "/order");
   request.setRequestHeader("Content-Type", "application/json");
   request.send(JSON.stringify(send));
+
+  request.onreadystatechange = function () {
+    if (this.readyState == XMLHttpRequest.DONE && this.status == 201) {
+      var response = JSON.parse(this.responseText);
+      orderId.set(stringNomApi, response.orderId);
+
+      creationPageConfirmation()
+      .then(function (data) {
+
+        if(document.querySelector("body").className == "modal-open"){ // Sans ces lignes...
+          document.querySelector("body").removeAttribute("class"); // ...la modale contenant...
+          document.querySelector("body").removeAttribute("style"); // ...le formulaire...
+          document.querySelector(".modal-backdrop").remove();      // ...ne se fermerait pas correctement.
+        }
+    
+        document.getElementById("app").innerHTML = "";
+    
+        document.getElementById("app").appendChild(data);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+      
+    }
+  }
+}
+
+async function creationPageConfirmation(){
+  var section = document.createElement("section");
+  var titre = document.createElement("h2");
+  var p = document.createElement("p");
+  var p2 = document.createElement("p");
+  var prixTotal = document.createElement("p");
+  var article = document.createElement("article");
+
+  section.className += "sectionConfirmation";
+  titre.className += "titreConfirmation";
+  p.className += "pConfirmation";
+  p2.className += "pConfirmation";
+  prixTotal.className += "prixTotalConfirmation";
+  article.className += "articleConfirmation";
+
+  titre.textContent = "Commande confirmee !";
+  p.textContent = "Merci de nous avoir fait confiance !";
+  p2.textContent = "Voici vos identifiants de commande :";
+  prixTotal.innerHTML = `Prix Total : <span>`+ total/100 +`€ </span>`
+
+  section.appendChild(titre);
+  section.appendChild(p);
+  section.appendChild(p2);
+
+  orderId.forEach(function(cle, valeur) {
+
+    var pId = document.createElement("p");
+    pId.className += "pConfirmationId";
+    pId.textContent = "ID de commande sur Ori" + valeur + " : " + cle;
+
+    article.appendChild(pId);
+  });
+
+  section.appendChild(article);
+  section.appendChild(prixTotal);
+
+  //Une fois la commande passée, on vide le panier.
+  localStorage.clear();
+  panier = [];  
+
+  return section;
 }
 
 async function get(urlApi, idDivEtApi, titres) {
@@ -336,9 +418,9 @@ function accueil() {
   .catch(function (err) {
     console.log(err);
   });
-  get("http://localhost:3000/api/teddies", "teddies", "Oursons en peluche");
-  get("http://localhost:3000/api/cameras", "cameras", "Cameras");
-  get("http://localhost:3000/api/furniture", "furniture", "Fournitures");
+  get("http://localhost:3000/api/teddies", "teddies", "OriTeddies");
+  get("http://localhost:3000/api/cameras", "cameras", "OriCameras");
+  get("http://localhost:3000/api/furniture", "furniture", "OriFurnitures");
 }
 
 function details(_id, idDivEtApi) {
@@ -372,8 +454,10 @@ function ajouterAuPanier(_id, idDivEtApi) {
 
 function viderPanier(){
   localStorage.clear();
+  panier = [];
   alert("Votre panier est à présent vide !");
-  window.location.reload();
+  monPanier();
+  //window.location.reload();
 }
 
 function monPanier() {
