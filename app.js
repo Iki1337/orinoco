@@ -60,7 +60,7 @@ async function creationArticle(api, idDivEtApi, titres) {
   return section;
 }
 
-async function creationDetails(api, _id, idDivEtApi) {
+async function creationDetails(api, idDivEtApi) {
   // Cette fonction va nous permettre de créer une vue affichant les détails de l'article sur lequel on vient de cliquer.
 
   var section = document.createElement("section");
@@ -465,7 +465,7 @@ function details(_id, idDivEtApi) {
   request.onreadystatechange = function () {
     if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
       var response = JSON.parse(this.responseText);
-      creationDetails(response, _id, idDivEtApi)
+      creationDetails(response, idDivEtApi)
         .then(function (data) {
           document.getElementById("app").appendChild(data);
         })
