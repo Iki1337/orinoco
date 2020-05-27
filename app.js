@@ -1,3 +1,7 @@
+var tabUrl = ["http://localhost:3000/api/teddies", "http://localhost:3000/api/cameras", "http://localhost:3000/api/furniture"];
+var tabIdDivEtApi = ["teddies", "cameras", "furniture"];
+var tabTitres = ["OriTeddies", "OriCameras", "OriFurnitures"];
+
 var panier = [];
 var panierLocalStorage;
 
@@ -13,6 +17,7 @@ async function slider(){ //Il s'agit simplement d'un carousel bootstrap, sans mo
 }
 
 async function creationArticle(api, idDivEtApi, titres) {
+  
   // Cette fonction va nous permettre de créer les articles séléctionnables sur la page d'accueil sous forme de liste.
   var section = document.createElement("section");
   var titreCategorie = document.createElement("h2");
@@ -128,7 +133,7 @@ async function creationDetails(api, idDivEtApi) {
   return section;
 }
 
-async function creationPanier() { // Cette fonction va créer une vue affichant le panier.
+async function creationPanier(value) { // Cette fonction va créer une vue affichant le panier.
 
   var section = document.createElement("section");
   var titreSection = document.createElement("h2");
@@ -143,8 +148,6 @@ async function creationPanier() { // Cette fonction va créer une vue affichant 
   titreSection.textContent = "Mon panier";
 
   section.appendChild(titreSection);
-
-  value = panier;
 
   // On vérifie que le panier contient quelque chose :
 
@@ -227,7 +230,7 @@ async function creationPanier() { // Cette fonction va créer une vue affichant 
     // Creation du formulaire dans une modale (Utlisation de classes Bootstrap, pas de vérification en HTML) (Idem qu'au dessus, le formulaire est contenu dans le else. Le HTML si dessous ne sera donc créée que si la panier est rempli.):
 
     var form = document.createElement("div");
-    form.innerHTML = `<div class="modal fade validationFormModal" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true"> <div class="modal-dialog modal-lg" role="document"> <div class="modal-content"> <div class="modal-header"> <h5 class="modal-title" id="headerModal">Validation de la commande</h5> <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> </div><div class="modal-body"> <form name="validationCommande" action=""> <div class="form-group"> <input type="text" name="nom" class="form-control" id="nom" required placeholder="Entrez votre nom"> <div class="invalid-feedback"> Le champ "nom" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="prénom" class="form-control" id="prenom" required placeholder="Entrez votre prénom"> <div class="invalid-feedback"> Le champ "prénom" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="adresse" class="form-control" id="adresse" required placeholder="Entrez votre adresse"> <div class="invalid-feedback"> Le champ "adresse" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="ville" class="form-control" id="ville" required placeholder="Renseignez votre ville"> <div class="invalid-feedback"> Le champ "ville" est vide ou invalide ! </div></div><div class="form-group"> <input type="email" name="email" class="form-control" id="mail" required placeholder="Entrez votre email"> <div class="invalid-feedback"> Le champ "email" est vide ou invalide ! </div></div><p>Tout les champs sont obligatoire.<br> Ce formulaire ne prend pas en charge les accents.</p></form> </div><div class="modal-footer"> <button onclick="validateForm()" class="validationBouton"> Valider</button> </div></div></div></div>`;
+    form.innerHTML = `<div class="modal fade validationFormModal" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true"> <div class="modal-dialog modal-lg" role="document"> <div class="modal-content"> <div class="modal-header"> <h5 class="modal-title" id="headerModal">Validation de la commande</h5> <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> </div><div class="modal-body"> <form name="validationCommande" action=""> <div class="form-group"> <input type="text" name="nom" class="form-control" id="nom" required placeholder="Entrez votre nom"> <div class="invalid-feedback"> Le champ "nom" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="prénom" class="form-control" id="prenom" required placeholder="Entrez votre prénom"> <div class="invalid-feedback"> Le champ "prénom" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="adresse" class="form-control" id="adresse" required placeholder="Entrez votre adresse"> <div class="invalid-feedback"> Le champ "adresse" est vide ou invalide ! </div></div><div class="form-group"> <input type="text" name="ville" class="form-control" id="ville" required placeholder="Renseignez votre ville"> <div class="invalid-feedback"> Le champ "ville" est vide ou invalide ! </div></div><div class="form-group"> <input type="email" name="email" class="form-control" id="mail" required placeholder="Entrez votre email"> <div class="invalid-feedback"> Le champ "email" est vide ou invalide ! </div></div><p>Tout les champs sont obligatoire.<br> Ce formulaire ne prend pas en charge les accents.</p></form> </div><div class="modal-footer"> <button onclick="recuperationChampForm()" class="validationBouton"> Valider</button> </div></div></div></div>`;
 
 
     aside.appendChild(p);
@@ -240,7 +243,7 @@ async function creationPanier() { // Cette fonction va créer une vue affichant 
   return section;
 }
 
-async function triArticle() {
+async function routageEnvoi(nom, prenom, adresse, ville, email) {
 
   // orderId est remise à 0 pour ne pas redonné les orderId des pécédentes commandes.
 
@@ -269,29 +272,22 @@ async function triArticle() {
   }
 
   if(teddies.length>0){
-    envoiForm(teddies, "teddies");
+    envoiForm(teddies, "teddies", nom, prenom, adresse, ville, email);
   }
 
   if(cameras.length>0){
-    envoiForm(cameras, "cameras");
+    envoiForm(cameras, "cameras", nom, prenom, adresse, ville, email);
   }
 
   if(furniture.length>0){
-    envoiForm(furniture, "furniture");
+    envoiForm(furniture, "furniture", nom, prenom, adresse, ville, email);
   }
 
-  /*console.log(orderId);*/
+  return [teddies, cameras, furniture];
+
 }
 
-async function envoiForm(api, stringNomApi){
-
-  // On récupère les champs du formulaire :
-
-  var nom = document.forms["validationCommande"]["nom"].value;
-  var prenom = document.forms["validationCommande"]["prenom"].value;
-  var adresse = document.forms["validationCommande"]["adresse"].value;
-  var ville = document.forms["validationCommande"]["ville"].value;
-  var email = document.forms["validationCommande"]["email"].value;
+async function envoiForm(api, stringNomApi, nom, prenom, adresse, ville, email){
 
   // Création de la variable qui englobera l'objet contact et le tableau products :
 
@@ -306,8 +302,6 @@ async function envoiForm(api, stringNomApi){
    },
     products :[api]
    }
-
-   console.log(send);
 
   // Envoi des requêtes POST :
 
@@ -413,7 +407,7 @@ async function get(urlApi, idDivEtApi, titres) {
   request.send();
 }
 
-function accueil() {
+function accueil(tabUrl, tabIdDivEtApi, tabTitres) {
   document.getElementById("app").innerHTML = "";
   slider()
   .then(function (data) {
@@ -422,9 +416,10 @@ function accueil() {
   .catch(function (err) {
     console.log(err);
   });
-  get("http://localhost:3000/api/teddies", "teddies", "OriTeddies");
-  get("http://localhost:3000/api/cameras", "cameras", "OriCameras");
-  get("http://localhost:3000/api/furniture", "furniture", "OriFurnitures");
+
+  for (let i = 0; i < tabUrl.length; i++) {
+    get(tabUrl[i], tabIdDivEtApi[i], tabTitres[i]);
+  }
 }
 
 function asideCookies(){
@@ -500,7 +495,8 @@ function viderPanier(){
 
 function monPanier() {
   document.getElementById("app").innerHTML = "";
-  creationPanier()
+  value = panier;
+  creationPanier(value)
     .then(function (data) {
       document.getElementById("app").appendChild(data);
     })
@@ -517,12 +513,20 @@ function mentionsLegales() {
   document.getElementById("app").appendChild(section);
 }
 
-function validateForm(){ // Cette fonction va vérifier les champs du formulaire. Si à l'issue des conditions suivantes, les champs sont tous valides, alors on appelle la fonction envoiFormulaire(). Autrement, l'utilisateur sera mit au courant de l'invalidité de ses données.
+function recuperationChampForm(){ // Récupération des valeurs des champs du formulaire.
+
   var nom = document.forms["validationCommande"]["nom"];
   var prenom = document.forms["validationCommande"]["prenom"];
   var adresse = document.forms["validationCommande"]["adresse"];
   var ville = document.forms["validationCommande"]["ville"];
   var email = document.forms["validationCommande"]["email"];
+
+  validateForm(nom, prenom, adresse, ville, email);
+
+  return [nom.value, prenom.value, adresse.value, ville.value, email.value];
+}
+
+function validateForm(nom, prenom, adresse, ville, email){ // Cette fonction va vérifier les champs du formulaire. Si à l'issue des conditions suivantes, les champs sont tous valides, alors on appelle la fonction envoiFormulaire(). Autrement, l'utilisateur sera mit au courant de l'invalidité de ses données.
 
   // Ces valeurs passeront à true si le champ correspondant est valide.
 
@@ -576,12 +580,12 @@ function validateForm(){ // Cette fonction va vérifier les champs du formulaire
   }
 
   if(nomValide && prenomValide && adresseValide && villeValide && emailValide){ // Si tout les champs sont validés, alors on appelle la fonction envoiFormulaire();
-    triArticle();
+    routageEnvoi(nom.value, prenom.value, adresse.value, ville.value, email.value);
   }
   
 }
 
-accueil();
+accueil(tabUrl, tabIdDivEtApi, tabTitres);
 var value = JSON.parse(localStorage.getItem("panier")); // On synchronise le contenu du panier de la session avec celui du panier en mémoire dans le localStorage dès le lancement de l'application. Cela évite que le contenu de la page panier ne s'efface dès qu'on ajoute un nouvel article lors de la prochaine session.
 if (value != null) {
   panier = value;
